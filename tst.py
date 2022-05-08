@@ -1,0 +1,17 @@
+import rec
+
+f1=open("text1","r")
+f1txt=f1.read()
+p1=rec.Paper(f1txt,"Type 1",[])
+f2=open("text2","r")
+f2txt=f2.read()
+p2=rec.Paper(f2txt,"Type 2",[])
+f3=open("text3","r")
+f3txt=f3.read()
+p3=rec.Paper(f3txt,"Arch",[])
+f4=open("text4","r")
+f4txt=f4.read()
+p4=rec.Paper(f4txt,"Type 3",[])
+prof = rec.UserProf()
+prof.addPaper(p1)
+prof.addPaper(p2)
