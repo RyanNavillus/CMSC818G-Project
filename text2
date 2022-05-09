@@ -1,0 +1,162 @@
+A Type System for Higher-Order Modules∗
+Derek Dreyer Karl Crary Robert Harper
+School of Computer Science
+Carnegie Mellon University
+Pittsburgh, PA 15213
+{dreyer,crary,rwh}@cs.cmu.edu
+Abstract
+We present a type theory for higher-order modules that accounts
+for many central issues in module system design, including translucency, applicativity, generativity, and modules as first-class values.
+Our type system harmonizes design elements from previous work,
+resulting in a simple, economical account of modular programming.
+The main unifying principle is the treatment of abstraction mechanisms as computational effects. Our language is the first to provide
+a complete and practical formalization of all of these critical issues
+in module system design.
+Categories and Subject Descriptors
+D.3.1 [Programming Languages]: Formal Definitions and Theory; D.3.3 [Programming Languages]: Language Constructs and
+Features—Abstract data types, Modules; F.3.3 [Logics and Meanings of Programs]: Studies of Program Constructs—Type structure
+General Terms
+Languages, Theory
+Keywords
+Type theory, modularity, computational effects, abstract data types,
+functors, generativity, singleton types
+1 Introduction
+The design of languages for modular programming is surprisingly
+delicate and complex. There is a fundamental tension between
+∗The ConCert Project is supported by the National Science
+Foundation under grant number 0121633: ”ITR/SY+SI: Language
+Technology for Trustless Software Dissemination”.
+Permission to make digital or hard copies of all or part of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. To copy otherwise, to republish, to post on servers or to redistribute
+to lists, requires prior specific permission and/or a fee.
+POPL’03, January 15–17, 2003, New Orleans, Louisiana, USA.
+Copyright 2003 ACM 1-58113-628-5/03/0001 ...$5.00
+the desire to separate program components into relatively independent parts and the need to integrate these parts to form a coherent whole. To some extent the design of modularity mechanisms
+is independent of the underlying language [17], but to a large extent the two are inseparable. For example, languages with polymorphism, generics, or type abstraction require far more complex
+module mechanisms than those without them.
+Much work has been devoted to the design of modular programming languages. Early work on CLU [19] and the Modula family
+of languages [34, 2] has been particularly influential. Much effort
+has gone into the design of modular programming mechanisms for
+the ML family of languages, notably Standard ML [23] and Objective Caml [27]. Numerous extensions and variations of these
+designs have been considered in the literature [21, 18, 28, 31, 5].
+Despite (or perhaps because of) these substantial efforts, the field
+has remained somewhat fragmented, with no clear unifying theory
+of modularity having yet emerged. Several competing designs have
+been proposed, often seemingly at odds with one another. These
+decisions are as often motivated by pragmatic considerations, such
+as engineering a useful implementation, as by more fundamental
+considerations, such as the semantics of type abstraction. The relationship between these design decisions is not completely clear, nor
+is there a clear account of the trade-offs between them, or whether
+they can be coherently combined into a single design.
+The goal of this paper is to provide a simple, unified formalism
+for modular programming that consolidates and elucidates much of
+the work mentioned above. Building on a substantial and growing
+body of work on type-theoretic accounts of language structure, we
+propose a type theory for higher-order program modules that harmonizes and enriches these designs and that would be suitable as a
+foundation for the next generation of modular languages.
+1.1 Design Issues
+Before describing the main technical features of our language, it is
+useful to review some of the central issues in the design of module
+systems for ML. These issues extend to any language of similar
+expressive power, though some of the trade-offs may be different
+for different languages.
+Controlled Abstraction Modularity is achieved by using signatures (interfaces) to mediate access between program components.
+The role of a signature is to allow the programmer to “hide” type
+information selectively. The mechanism for controlling type propagation is translucency [11, 14], with transparency and opacity as
+limiting cases.
+1
+Phase Separation ML-like module systems enjoy a phase separation property [12] stating that every module is separable into a
+static part, consisting of type information, and a dynamic part, consisting of executable code. To obtain fully expressive higher-order
+modules and to support abstraction, it is essential to build this phase
+separation principle into the definition of type equivalence.
+Generativity MacQueen coined the term generativity for the
+creation of “new” types corresponding to run-time instances of
+an abstraction. For example, we may wish to define a functor
+SymbolTable that, given some parameters, creates a new symbol
+table. It is natural for the symbol table module to export an abstract
+type of symbols that are dynamically created by insertion and used
+for subsequent retrieval. To preclude using the symbols from one
+symbol table to index another, generativity is essential—each instance of the hash table must yield a “new” symbol type, distinct
+from all others, even when applied twice to the same parameters.
+Separate Compilation One goal of module system design is to
+support separate compilation [14]. This is achieved by ensuring
+that all interactions among modules are mediated by interfaces that
+capture all of the information known to the clients of separatelycompiled modules.
+Principal Signatures The principal, or most expressive, signature for a module captures all that is known about that module during type checking. It may be used as a proxy for that module for
+purposes of separate compilation. Many type checking algorithms,
+including the one given in this paper, compute principal signatures
+for modules.
+Modules as First-Class Values Modules in ML are “secondclass” in the sense that they cannot be computed as the results of
+ordinary run-time computation. It can be useful to treat a module as a first-class value that can be stored into a data structure, or
+passed as an ordinary function argument or result [11, 24].
+Hidden Types Introducing a local, or “hidden”, abstract type
+within a scope requires that the types of the externally visible components avoid mention of the abstract type. This avoidance problem
+is often a stumbling block for module system design, since in most
+expressive languages there is no “best” way to avoid a type variable [9, 18].
+1.2 A Type System for Modules
+The type system proposed here takes into account all of these design
+issues. It consolidates and harmonizes design elements that were
+previously seen as disparate into a single framework. For example,
+rather than regard generativity of abstract types as an alternative to
+non-generative types, we make both mechanisms available in the
+language. We support both generative and applicative functors, admit translucent signatures, support separate compilation, and are
+able to accommodate modules as first-class values [24, 29].
+Generality is achieved not by a simple accumulation of features,
+but rather by isolating a few key mechanisms that, when combined, yield a flexible, expressive, and implementable type system
+for modules. Specifically, the following mechanisms are crucial.
+Singletons Propagation of type sharing is handled by singleton
+signatures, a variant of Aspinall’s and Stone and Harper’s singleton
+kinds [33, 32, 1]. Singletons provide a simple, orthogonal treatment of sharing that captures the full equational theory of types in
+a higher-order module system with subtyping. No previous module
+system has provided both abstraction and the full equational theory supported by singletons,1
+and consequently none has provided
+optimal propagation of type information.
+Static Module Equivalence The semantics of singleton signatures is dependent on a (compile-time) notion of equivalence of
+modules. To ensure that the phase distinction is respected, we
+define module equivalence to mean “equivalence of static components,” ignoring all run-time aspects.
+Subtyping Signature subtyping is used to model “forgetting”
+type sharing, an essential part of signature matching. The coercive
+aspects of signature matching (dropping of fields and specialization
+of polymorphic values) are omitted here, since the required coercions are definable in the language.
+Purity and Impurity Our type system classifies module expressions into pure (effect-free) and impure (effectful) forms. To ensure
+proper enforcement of abstraction, impure modules are incomparable (may not be compared for equality with any other module)
+and non-projectible (may not have type components projected from
+them). It follows that impure modules are also non-substitutable
+(may not be substituted for a module variable in a signature).
+Abstraction and Sealing Modules that are sealed with a signature to impose type abstraction [11] are regarded as impure. In other
+words, sealing is regarded as a pro forma computational effect. This
+is consistent with the informal idea that generativity involves the
+generation of new types at run time. Moreover, this ensures that
+sealed modules are incomparable and non-projectible, which is sufficient to ensure the proper semantics of type abstraction.
+Totality and Partiality Functors are λ-abstractions at the level of
+modules. A functor whose body is pure is said to be total; otherwise
+it is partial. It follows that the application of a pure, total functor to
+a pure argument is pure, whereas the application of a pure, partial
+functor to a pure argument is impure. Partial functors are naturally
+generative, meaning that the abstract types in its result are “new”
+for each instance; total functors are applicative, meaning that equal
+arguments yield equal types in the result. Generative functors are
+obtained without resort to “generative stamps” [23, 21].
+Weak and Strong Sealing Since sealing induces a computational effect, only partial functors may contain sealed substructures; this significantly weakens the utility of total functors.
+To overcome this limitation we distinguish two forms of effect,
+static and dynamic, and two forms of sealing, weak and strong.
+Weak sealing induces a static effect, which we think of as occurring once during type checking; strong sealing induces a dynamic
+effect, which we think of as occurring during execution. Dynamic
+effects induce partiality, static effects preserve totality.
+Existential Signatures In a manner similar to Shao [31], our
+type system is carefully crafted to circumvent the avoidance problem, so that every module enjoys a principal signature. However,
+this requires imposing restrictions on the programmer. To lift these
+restrictions, we propose the use of existential signatures to provide
+principal signatures where none would otherwise exist. We show
+that these existential signatures are type-theoretically ill-behaved in
+1Typically the omitted equations are not missed because restrictions to named form or valuability prevent programmers from writing code whose typeability would depend on those equations in the
+first place [4].
+2
+types τ ::= Typ M | Πs:σ.τ | τ1 ×τ2
+terms e ::= Val M | he1,e2i | πie | eM |
+fix f(s:σ):τ.e | let s = M in (e : τ)
+signatures σ ::= 1 | [T] | [τ] | Πtots:σ1.σ2 | Πpar
+s:σ1.σ2 |
+Σs:σ1.σ2 | 

@@ -1,0 +1,202 @@
+Chapter 4
+Processor Architecture
+Modern microprocessors are among the most complex systems ever created by humans. A single silicon
+chip, roughly the size of a fingernail, can contain a complete high-performance processor, large cache
+memories, and the logic required to interface it to external devices. In terms of performance, the processors
+implemented on a single chip today dwarf the room-sized supercomputers that cost over $10 million just
+20 years ago. Even the embedded processors found in everyday appliances such as cell phones, personal
+digital assistants, and handheld game systems are far more powerful than the early developers of computers
+ever envisioned.
+Thus far, we have only viewed computer systems down to the level of machine-language programs. We
+have seen that a processor must execute a sequence of instructions, where each instruction performs some
+primitive operation, such as adding two numbers. An instruction is encoded in binary form as a sequence
+of 1 or more bytes. The instructions supported by a particular processor and their byte-level encodings
+are known as its instruction-set architecture (ISA). Different “families” of processors, such as Intel IA32,
+IBM/Freescale PowerPC, and the ARM processor family have different ISAs. A program compiled for one
+type of machine will not run on another. On the other hand, there are many different models of processors
+within a single family. Each manufacturer produces processors of ever-growing performance and complexity, but the different models remain compatible at the ISA level. Popular families, such as IA32, have
+processors supplied by multiple manufacturers. Thus, the ISA provides a conceptual layer of abstraction
+between compiler writers, who need only know what instructions are permitted and how they are encoded,
+and processor designers, who must build machines that execute those instructions.
+In this chapter, we take a brief look at the design of processor hardware. We study the way a hardware system
+can execute the instructions of a particular ISA. This view will give you a better understanding of how
+computers work and the technological challenges faced by computer manufacturers. One important concept
+is that the actual way a modern processor operates can be quite different from the model of computation
+implied by the ISA. The ISA model would seem to imply sequential instruction execution, where each
+instruction is fetched and executed to completion before the next one begins. By executing different parts
+of multiple instructions simultaneously, the processor can achieve higher performance than if it executed
+just one instruction at a time. Special mechanisms are used to make sure the processor computes the same
+results as it would with sequential execution. This idea of using clever tricks to improve performance while
+maintaining the functionality of a simpler and more abstract model is well known in computer science.
+317
+318 CHAPTER 4. PROCESSOR ARCHITECTURE
+Examples include the use of caching in Web browsers and information retrieval data structures such as
+balanced binary trees and hash tables.
+Chances are you will never design your own processor. This is a task for experts working at fewer than 100
+companies worldwide. Why, then, should you learn about processor design?
+• It is intellectually interesting and important. There is an intrinsic value in learning how things work.
+It is especially interesting to learn the inner workings of a system that is such a part of the daily lives
+of computer scientists and engineers and yet remains a mystery to many. Processor design embodies
+many of the principles of good engineering practice. It requires creating a simple and regular structure
+to perform a complex task.
+• Understanding how the processor works aids in understanding how the overall computer system
+works. In Chapter 6, we will look at the memory system and the techniques used to create an image of
+a very large memory with a very fast access time. Seeing the processor side of the processor-memory
+interface will make this presentation more complete.
+• Although few people design processors, many design hardware systems that contain processors. This
+has become commonplace as processors are embedded into real-world systems such as automobiles
+and appliances. Embedded-system designers must understand how processors work, because these
+systems are generally designed and programmed at a lower level of abstraction than is the case for
+desktop systems.
+• You just might work on a processor design. Although the number of companies producing microprocessors is small, the design teams working on those processors are already large and growing. There
+can be over 1000 people involved in the different aspects of a major processor design.
+In this chapter, we start by defining a simple instruction set that we use as a running example for our
+processor implementations. We call this the “Y86” instruction set, because it was inspired by the IA32
+instruction set, which is colloquially referred to as “x86.” Compared with IA32, the Y86 instruction set has
+fewer data types, instructions, and addressing modes. It also has a simpler byte-level encoding. Still, it is
+sufficiently complete to allow us to write simple programs manipulating integer data. Designing a processor
+to implement Y86 requires us to face many of the challenges faced by processor designers.
+We then provide some background on digital hardware design. We describe the basic building blocks used
+in a processor and how they are connected together and operated. This presentation builds on our discussion
+of Boolean algebra and bit-level operations from Chapter 2. We also introduce a simple language, HCL (for
+“Hardware Control Language”), to describe the control portions of hardware systems. We will later use this
+language to describe our processor designs. Even if you already have some background in logic design, read
+this section to understand our particular notation.
+As a first step in designing a processor, we present a functionally correct, but somewhat impractical, Y86
+processor based on sequential operation. This processor executes a complete Y86 instruction on every clock
+cycle. The clock must run slowly enough to allow an entire series of actions to complete within one cycle.
+Such a processor could be implemented, but its performance would be well below what could be achieved
+for this much hardware.
+With the sequential design as a basis, we then apply a series of transformations to create a pipelined processor. This processor breaks the execution of each instruction into five steps, each of which is handled
+4.1. THE Y86 INSTRUCTION SET ARCHITECTURE 319
+%eax
+%ecx
+%edx
+%ebx
+%esi
+%edi
+%esp
+%ebp
+ZF SF OF
+Figure 4.1: Y86 programmer-visible state. As with IA32, programs for Y86 access and modify the program registers, the condition code, the program counter (PC), and the memory. The status code indicates
+whether the program is running normally, or some special event has occurred.
+by a separate section or stage of the hardware. Instructions progress through the stages of the pipeline,
+with one instruction entering the pipeline on each clock cycle. As a result, the processor can be executing
+the different steps of up to five instructions simultaneously. Making this processor preserve the sequential
+behavior of the Y86 ISA requires handling a variety of hazard conditions, where the location or operands
+of one instruction depend on those of other instructions that are still in the pipeline.
+We have devised a variety of tools for studying and experimenting with our processor designs. These
+include an assembler for Y86, a simulator for running Y86 programs on your machine, and simulators for
+two sequential and one pipelined processor design. The control logic for these designs is described by files in
+HCL notation. By editing these files and recompiling the simulator, you can alter and extend the simulator’s
+behavior. A number of exercises are provided that involve implementing new instructions and modifying
+how the machine processes instructions. Testing code is provided to help you evaluate the correctness of
+your modifications. These exercises will greatly aid your understanding of the material and will give you an
+appreciation for the many different design alternatives faced by processor designers.
+Web Aside ARCH:VLOG presents a representation of our pipelined Y86 processor in the Verilog hardware
+description language. This involves creating modules for the basic hardware building blocks and for the
+overall processor structure. We automatically translate the HCL description of the control logic into Verilog. By first debugging the HCL description with our simulators, we eliminate many of the tricky bugs that
+would otherwise show up in the hardware design. Given a Verilog description, there are commercial and
+open-source tools to support simulation and logic synthesis, generating actual circuit designs for the microprocessors. So, although much of the effort we expend here is to create pictorial and textual descriptions
+of a system, much as one would when writing software, the fact that these designs can be automatically
+synthesized demonstrates that we are indeed creating a system that can be realized as hardware.
+4.1 The Y86 Instruction Set Architecture
+Defining an instruction set architecture, such as Y86, includes defining the different state elements, the set of
+instructions and their encodings, a set of programming conventions, and the handling of exceptional events.
+320 CHAPTER 4. PROCESSOR ARCHITECTURE
+4.1.1 Programmer-Visible State
+As Figure 4.1 illustrates, each instruction in a Y86 program can read and modify some part of the processor
+state. This is referred to as the programmer-visible state, where the “programmer” in this case is either
+someone writing programs in assembly code or a compiler generating machine-level code. We will see in
+our processor implementations that we do not need to represent and organize this state in exactly the manner
+implied by the ISA, as long as we can make sure that machine-level programs appear to have access to the
+programmer-visible state. The state for Y86 is similar to that for IA32. There are eight program registers:
+%eax, %ecx, %edx, %ebx, %esi, %edi, %esp, and %ebp. Each of these stores a word. Register %esp
+is used as a stack pointer by the push, pop, call, and return instructions. Otherwise, the registers have no
+fixed meanings or values. There are three single-bit condition codes, ZF, SF, and OF, storing information
+about the effect of the most recent arithmetic or logical instruction. The program counter (PC) holds the
+address of the instruction currently being executed.
+The memory is conceptually a large array of bytes, holding both program and data. Y86 programs reference
+memory locations using virtual addresses. A combination of hardware and operating system software translates these into the actual, or physical, addresses indicating where the values are actually stored in memory.
+We will study virtual memory in more detail in Chapter 9. For now, we can think of the virtual memory
+system as providing Y86 programs with an image of a monolithic byte array.
+A final part of the program state is a status code Stat, indicating the overall state of program execution.
+It will indicate either normal operation, or that some sort of exception has occurred, such as when an instruction attempts to read from an invalid memory address. The possible status codes and the handling of
+exceptions is described in Section 4.1.4.
+4.1.2 Y86 Instructions
+Figure 4.2 gives a concise description of the individual instructions in the Y86 ISA. We use this instruction
+set as a target for our processor implementations. The set of Y86 instructions is largely a subset of the
+IA32 instruction set. It includes only 4-byte integer operations, has fewer addressing modes, and includes
+a smaller set of operations. Since we only use 4-byte data, we can refer to these as “words” without any
+ambiguity. In this figure, we show the assembly-code representation of the instructions on the left and the
+byte encodings on the right. The assembly-code format is similar to the ATT format for IA32.
+Here are some further details about the different Y86 instructions.
+• The IA32 movl instruction is split into four different instructions: irmovl, rrmovl, mrmovl, and
+rmmovl, explicitly indicating the form of the source and destination. The source is either immediate
+(i), register (r), or memory (m). It is designated by the first character in the instruction name. The
+destination is either register (r) or memory (m). It is designated by the second character in the instruction name. Explicitly identifying the four types of data transfer will prove helpful when we decide
+how to implement them.
+The memory references for the two memory movement instructions have a simple base and displacement format. We do not support the second index register or any scaling of a register’s value in the
+address computation.
+4.1. THE Y86 INSTRUCTION SET ARCHITECTURE 321
+Byte 0 1 2 3 4 5
+pushl rA A 0 rA F
+jXX Dest 7 fn Dest
+popl rA B 0 rA F
+call Dest 8 0 Dest
+rrmovl rA, rB 2 0 rA rB
+irmovl V, rB 3 0 F rB V
+rmmovl rA, D (rB) 4 0 rA rB D
+mrmovl D (rB), rA 5 0 rA rB D
+OPl rA, rB 6 fn rA rB
+ret 9 0
+halt 0 0
+nop 1 0
+cmovXX rA, rB 2 fn rA rB
+Figure 4.2: Y86 instruction set. Instruction encodings range between 1 and 6 bytes. An instruction
+consists of a 1-byte instruction specifier, possibly a 1-byte register specifier, and possibly a 4-byte constant
+word. Field fn specifies a particular integer operation (OPl), data movement condition (cmovXX), or branch
+condition (jXX). All numeric values are shown in hexadecimal.
+addl 6 0
+subl 6 1
+an dl 6 2
+xorl 6 3
+jmp 7 0
+jle 7 1
+jl 7 2
+je 7 3
+jn e 7 4
+jge 7 5
+jg 7 6
+Operat ions Branches
+rrmov l 2 0
+cm ovle 2 1
+cm ovl 2 2
+cm ove 2 3
+cm ovn e 2 4
+cm ovge 2 5
+cm ovg 2 6
+Moves
+Figure 4.3: Function codes for Y86 instruction set. The code specifies a particular integer operation,
+branch condition, or data transfer condition. These instructions are shown as OPl, jXX, and cmovXX in
+Figure 4.2.
+322 CHAPTER 4. PROCESSOR ARCHITECTURE
+As with IA32, we do not allow direct transfers from one memory location to another. In addition, we
+do not allow a transfer of immediate data to memory.
+• There are four integer operation instructions, shown in Figure 4.2 as OPl. These are addl, subl,
+andl, and xorl. They operate only on register data, whereas IA32 also allows operations on memory data. These instructions set the three condition codes ZF, SF, and OF (zero, sign, and overflow).
+• The seven jump instructions (shown in Figure 4.2 as jXX) are jmp, jle, jl, je, jne, jge, and
+jg. Branches are taken according to the type of branch and the settings of the condition codes. The
+branch conditions are the same as with IA32 (Figure 3.12).
+• There are six conditional move instructions (shown in Figure 4.2 as cmovXX): cmovle, cmovl,
+cmove, cmovne, cmovge, and cmovg. These have the same format as the register-register move
+instruction rrmovl, but the destination register is updated only if the condition codes satisfy the
+required constraints.
+• The call instruction pushes the return address on the stack and jumps to the destination address.
+The ret instruction returns from such a call.
+• The pushl and popl instructions implement push and pop, just as they do in IA32.
+• The halt instruction stops instruction execution. IA32 has a comparable instruction, called hlt.
+IA32 application programs are not permitted to use this instruction, since it causes the entire system
+to suspend operation. For Y86, executing the halt instruction causes the processor to stop, with the
+status code set to HLT. (See Section 4.1.4.)
+4.1.3 Instruction Encoding

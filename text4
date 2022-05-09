@@ -1,0 +1,192 @@
+Type Systems for Concurrent Programs
+Naoki Kobayashi
+Department of Computer Science
+Tokyo Institute of Technology
+kobayasi@kb.cs.titech.ac.jp
+Abstract. Type systems for programming languages help reasoning about
+program behavior and early finding of bugs. Recent applications of type
+systems include analysis of various program behaviors such as side effects, resource usage, security properties, and concurrency. This paper
+is a tutorial of one of such applications: type systems for analyzing behavior of concurrent processes. We start with a simple type system and
+extend it step by step to obtain more expressive type systems to reason
+about deadlock-freedom, safe usage of locks, etc.
+1 Introduction
+Most of modern programming languages are equipped with type systems, which
+help reasoning about program behavior and early finding of bugs. This paper is
+a tutorial of type systems for concurrent programs.
+Functional programming language ML [20] is one of the most successful applications of a type system that are widely used in practice. The type system of
+ML automatically infers what type of value each function can take, and checks
+whether an appropriate argument is supplied to the function. For example, if
+one defines a function to return the successor of an integer, the type system of
+ML infers that it should take an integer and return an integer:
+fun succ x = x+1;
+val succ = fn : int -> int
+Here, the line in the italic style shows the system’s output. If one tries to apply
+the function to a string by mistake, the type system reports an error before
+executing the program:
+f "a";
+Error: operator and operand don’t agree ...
+Thanks to the type system, most of the bugs are found in the type-checking
+phase.
+Type systems for concurrent programming languages have been, however,
+less satisfactory. For example, consider the following program in CML [26].
+fun f(x:int) = let val y=channel() in recv(y)+x end;
+Function f takes an integer as an argument. It first creates a new communication
+channel y (by channel()) and then tries to receive a value from the channel. It
+is blocked forever since there is no process to send a value on y. This function
+is, however, type-checked in CML and given a type int → int.
+To improve the situation above, type systems for analyzing usage of concurrency primitives have been extensively studied in the last decade [2, 4–6, 11–
+14, 21–23, 33]. Given concurrent programs, those type systems analyze whether
+processes communicate with each other in a disciplined manner, so that a message is received by the intended process, that no deadlock happens, that no race
+condition occurs, etc.
+The aim of this paper is to summarize the essence of type systems for analyzing concurrent programs. Since concurrent programs are harder to debug
+than sequential programs, we believe that type systems for concurrent programs
+should be applied more widely and play more important roles in debugging and
+verification of programs. We hope that this paper serves as a guide for those
+who are interested in further extending type systems for concurrent programs or
+incorporating some of the type systems into programming languages and tools.
+We use the π-calculus [18, 19, 29] as the target language of type systems in
+this paper. Since the π-calculus is simple but expressive enough to express various
+features of real concurrent programming languages, it is not difficult to extend
+type systems for the π-calculus to those for full-scale programming languages.
+Section 2 introduces the syntax and operational semantics of the π-calculus.
+In Sections 3–8, we first present a simple type system, and extend it step by step
+to obtain more advanced type systems. Section 9 concludes this paper.
+2 Target Language
+We use a variant of the π-calculus [18, 19, 29] as the target language. The πcalculus models processes interacting with each other through communication
+channels. Processes and communication channels can be dynamically created,
+and references to communication channels can be dynamically exchanged among
+processes so that the communication topology can change dynamically.
+Definition 1 (processes, values). The sets of expressions, process expressions, and value expressions, ranged over by A, P, and v respectively, are defined
+by the following syntax.
+A ::= P | v
+P ::= 0 | x![v1, . . . , vn] | x?[y1 : τ1, . . . , yn : τn]. P | (P | Q)
+| (νx : τ ) P | ∗P | if v then P else Q
+v ::= x | true | false
+In the definition above, τ denotes a type introduced in later sections. The type
+information need not be specified by a programmer (unless the programmer
+wants to check the type); As in ML [20], it can be automatically inferred in
+most of the type systems introduced in this paper.
+Process 0 does nothing. Process x![y1, . . . , yn] sends a tuple [v1, . . . , vn] of
+values on channel x. Process x?[y1 : τ1, . . . , yn : τn]. P waits to receive a tuple
+[v1, . . . , vn] of values, binds y1, . . . , yn to v1, . . . , vn, and behaves like P. P | Q
+runs P and Q in parallel. Process (νx) P creates a fresh communication channel,
+binds x to it, and behaves like P. Process ∗P runs infinitely many copies of P
+in parallel. Process if v then P else Q behaves like P if v is true and behaves
+like Q if v is false. For simplicity, we assume that a value expression is either
+a boolean (true, false) or a variable, which is bound to a boolean or a channel
+by an input prefix (x?[y1, . . . , yn].) or a ν-prefix.
+We write P −→ Q if Q is reduced to P in one step (by a communication
+or reduction of a conditional expression). The formal operational semantics is
+found in the literature on the π-calculus [18, 29].
+We give below simple examples, which we will use later to explain type
+systems. In some of the examples, we use integers and operations on them.
+Example 1 (ping server). The process ∗ping? [r]. r![ ] works as a ping server. It
+waits to receive a message on channel ping and sends a null tuple on the received
+channel. A typical client process is written as: (νreply) (ping![reply] | reply?[ ]. P).
+It creates a fresh channel reply for receiving a reply, checks whether the ping
+server is alive by sending the channel, waits to receive a reply, and then executes
+P. Communications between the server and the client proceed as follows:
+∗ping? [r]. r![ ] |(νreply) (ping![reply] | reply?[ ]. P)
+−→ ∗ping? [r]. r![ ] |(νreply) (reply![ ] | reply?[ ]. P)
+−→ ∗ping? [r]. r![ ] |(νreply) P
+In the second line, (νreply) denotes the fact that the channel reply is a new
+channel and known by only the processes in the scope.
+Example 2 (recursive processes). Recursive processes can be defined using replications (∗P). Consider a process of the form (νp) (∗p?[x1, . . . , xn]. P | Q). Each
+time Q sends a tuple [v1, . . . , vn] along p, the process [v1/x1, . . . , vn/xn]P is
+executed. So, the process ∗p?[x1, . . . , xn]. P works as a process definition. We
+write let proc p[x1, . . . , xn] = P in Q for (νp) (∗p?[x1, . . . , xn]. P | Q) below.
+For example, the following expression defines a recursive process that takes a
+pair consisting of an integer n and a channel r as an argument and sends n
+messages on r.
+let proc p[n, r] = if n ≤ 0 then 0 else (r![ ] | p! [n − 1, r]) in · · ·
+Example 3 (locks and objects). A concurrent object can be modeled by multiple
+processes, each of which handles each method of the object [13, 17, 24]. For example, the following process models an object that has an integer as a state and
+provides services to set and read the state.
+(νs) (s![0] | ∗set?[new]. s?[old].(s![new] | r![ ])
+| ∗read?[r]. s?[x].(s![x] | r![x]))
+The channel s is used to store the state. The process above waits to receive
+request messages on channels set and read. For example, when a request set![3]
+arrives, it sets the state to 3 and sends an acknowledgment on r.
+Since more than one processes may access the above object concurrently,
+some synchronization is necessary if a process wants to increment the state of
+the object by first sending a read request and then a set request. A lock can
+be implemented using a communication channel. Since a receiver on a channel
+is blocked until a message becomes available, the locked state can be modeled
+by the absence of a message in the lock channel, and the unlocked state can
+be modeled by the presence of a message. The operation to acquire a lock is
+implemented as the operation to receive a message along the lock channel, and
+the operation to release the lock as the operation to send a message on the
+channel. For example, the following process increment the state of the object
+using a lock channel lock.
+lock?[ ].(νr) (read! [r] | r?[x].(νr0
+) (set![x + 1, r0
+] | r
+0
+?[ ]. lock![ ]))
+3 A Simple Type System
+In this section, we introduce a simple type system [7, 32] for our language. It prevents simple programming errors like: ∗ping? [r]. r![ ] | ping![true], which sends a
+boolean instead of a channel along channel ping, and ∗ping? [r]. r![ ] | ping![x, y],
+which sends a wrong number of values on ping. Most of the existing programming
+languages that support concurrency primitives have this kind of type system.
+In order to avoid the confusion between booleans and channels and the arity
+mismatch error above, it is sufficient to classify values into booleans and channels,
+and to further classify channels according to the shape of transmitted values.
+We define the syntax of types as follows.
+τ ::= bool | [τ1, . . . , τn] chan
+σ ::= τ | proc
+Type bool is the type of booleans, and [τ1, . . . , τn] chan is the type of channels
+that are used for transmitting a tuple of values of types τ1, . . . , τn. For example,
+if x is used for sending a pair of booleans, x must have type [bool, bool] chan. A
+special type proc is the type of processes. The programming errors given in the
+beginning of this section are prevented by assigning to ping a type [bool] chan.
+An expression is called well-typed if each value is consistently used according
+to its type. The notion of well-typeness is relative to the assumption about free
+variables, represented by a type environment. It is a mapping form a finite set of
+variables to types. We use a meta-variable Γ to denote a type environment. We
+write ∅ for the typing environment whose domain is empty, and write dom(Γ) for
+the domain of Γ. When x 6∈ dom(Γ), we write Γ, x : τ for the type environment
+obtained by extending the type environment Γ with the binding of x to τ . We
+write Γ ≤ Γ
+0 when dom(Γ) ⊇ dom(Γ
+0
+) and Γ(x) = Γ
+0
+(x) for each x ∈ dom(Γ
+0
+).
+b ∈ {true,false}
+∅ ` b : bool
+(ST-Bool)
+x : τ ` x : τ (ST-Var)
+Γ
+0 ` A : σ Γ ≤ Γ
+0
+Γ ` A : σ
+(ST-Weak)
+∅ ` 0 : proc (ST-Zero)
+Γ ` P : proc
+Γ ` Q : proc
+Γ ` P | Q : proc
+(ST-Par)
+Γ, x : τ ` P : proc
+τ is a channel type
+Γ ` (νx : τ ) P : proc
+(ST-New)
+Γ ` P : proc
+Γ ` ∗P : proc
+(ST-Rep)
+Γ ` x : [τ1, . . . , τn] chan Γ ` vi : τi (for each i ∈ {1, . . . , n})
+Γ ` x![v1, . . . , vn] : proc
+(ST-Out)
+Γ ` x : [τ1, . . . , τn] chan Γ, y : τ1, . . . , y : τn ` P : proc
+Γ ` x?[y1 : τ1, . . . , yn : τn]. P : proc
+(ST-In)
+Γ ` v : bool Γ ` P : proc Γ ` Q : proc
+Γ ` if v then P else Q : proc
+(ST-If)
+Fig. 1. Typing rules for the simple type system
+Intuitively, Γ ≤ Γ
+0 means that Γ represents a stronger type assumption about
+variables.
+We write Γ ` A : σ if an expression A (which is either a value expression or a
+process expression) is well-typed and has type σ under the type environment Γ.
