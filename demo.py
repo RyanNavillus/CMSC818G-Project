@@ -6,9 +6,8 @@ papers = paper_data_from_zotero()   # list of 3 paper dictionaries
 # Build a corpus of papers to recommend from
 # For all papers, get the titles of all papers google scholar provides as related papers or cited by papers
 # this ends up being 50 papers
-corpus_titles = get_related_papers([papers[0]['data']['title'],
-                                    papers[1]['data']['title'],
-                                    papers[2]['data']['title']])
+title_list = [paper['data']['title'] for paper in papers]
+corpus_titles = get_related_papers(title_list)
 
 # make list of tuples (title, abstract) for the corpus of related papers
 corpus_abstract_tuples = []

@@ -22,7 +22,7 @@ APIKEY = 'CzACnmlnHkQxIbkjj1y2tNzu'
 
 def save_all_data(papers, fname):
     """
-    Saves a list of papers to storage json file
+    Saves a list of papers to storage (json file)
     :param papers: list of paper dictionaries
     :type papers: `list`
     :param fname: file name
@@ -50,14 +50,19 @@ def save_all_data(papers, fname):
 
 def get_related_papers(titles, related=True, cited_by=True):
     """
-
+    Finds papers that, according to google scholar, are related to and/or cited by the provided paper titles.
     :param titles:
+    :type titles: `list`
     :param related:
+    :type related: `list`
     :param cited_by:
+    :type cited_by: `list`
     :return:
+    :rtype: `list`
     """
     related_papers = []
     for title in titles:
+        print(title)
         # find title through google scholar
         search_query = scholarly.search_pubs(title)
         # uses the first result
@@ -74,7 +79,9 @@ def title_from_scholar_search_result(url):
     """
 
     :param url:
+    :type url: `list`
     :return:
+    :rtype: `list`
     """
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     html = urlopen(req).read()
@@ -104,8 +111,11 @@ def find_end_of_title(s, start_ind):
     """
 
     :param s:
+    :type s: `list`
     :param start_ind:
+    :type start_ind: `list`
     :return:
+    :rtype: `list`
     """
     end_ind = s.find(',') - 1
     if end_ind != -2:
@@ -209,13 +219,14 @@ def text_from_google_scholar(title, abstract=True):
         paper = next(search_query)
     except:
         print('Could not find', title, 'through Google Scholar')
-    if abstract:
-        if (paper['pub_url'] is not ''):
-            return abstract_from_pub_page(paper['pub_url'])
-        elif (paper['eprint_url'] is not ''):
-            return abstract_from_pdf(paper['pub_url'])
     else:
-        return full_text_from_pdf(paper['eprint_url'])
+        if abstract:
+            if (paper['pub_url'] is not ''):
+                return abstract_from_pub_page(paper['pub_url'])
+            elif (paper['eprint_url'] is not ''):
+                return abstract_from_pdf(paper['pub_url'])
+        else:
+            return full_text_from_pdf(paper['eprint_url'])
 
 
 def full_text_from_pdf(pdf):
