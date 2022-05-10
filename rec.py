@@ -20,8 +20,8 @@ class Paper:
     keywords = []
     vec = None 
     
-    def __init__(self,txt, title,kwds):
-        summary = summarizer(txt) #Slow, but Out of memory without summarization
+    def __init__(self,txt, title,kwds,abstract=False):
+        summary = txt if abstract else summarizer(txt) #Slow, but Out of memory without summarization
         summarySent = tokenize.sent_tokenize(summary)
         self.textTokens = tokenizer(summarySent,return_tensors="pt",padding=True,truncation=True,max_length=512)
         self.title = title
