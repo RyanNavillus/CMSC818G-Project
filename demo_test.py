@@ -5,8 +5,6 @@ import csv
 from scholarly import scholarly, ProxyGenerator
 import torch
 
-print('help')
-
 # accessing stored user titles and abstracts
 paper_abstract_tuples = []
 with open('users_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
@@ -89,11 +87,15 @@ for title in corpus_abstract_tuples:
         print("paper added to corpus")
 
 recs = rec.recommend(3,profile,corpus_papers)
+titles_for_zotero = []
 print("Recommended:")
 for i in recs:
-    print(i.getTitle())
+    title = i.getTitle()
+    print(title)
+    titles_for_zotero.append(title)
 
-
+# Add recommended papers to Zotero
+add_title_to_zotero(titles_for_zotero)
 
 """ # Create user profile from full text, summarization performed
 for papero in papers:

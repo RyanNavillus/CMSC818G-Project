@@ -47,6 +47,22 @@ def save_all_data(papers, fname):
         with open(fname, 'w') as fp:
             json.dump(dict, fp)
 
+def add_title_to_zotero(titles):
+    """
+    Add a list of papers (titles provided) to Zotero library.
+    :param titles: list of titles to add
+    :type titles: `list`
+    """
+    zot = zotero.Zotero(ID, LIBRARY, APIKEY)
+    for title in titles:
+        template = zot.item_template('journalArticle')
+        template['title'] = title
+        resp = zot.create_items([template])
+        if resp['failed'] == {}:
+            print('Successfully added', title, 'to Zotero')
+        else:
+            print('Failed to add', title, 'to Zotero')
+
 
 def get_related_papers(titles, related=True, cited_by=False):
     """
