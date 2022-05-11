@@ -52,7 +52,7 @@ class UserProf:
 
     def addPaper(self, paper):
         self.vec.append(paper.vec)
-        self.titles.append(paper.titles)
+        self.titles.append(paper.title)
 
     def findPaperExists(self,title):
         for i in self.titles:
