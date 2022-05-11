@@ -5,14 +5,15 @@ import csv
 from scholarly import scholarly, ProxyGenerator
 import torch
 
+print('help')
+
 # accessing stored user titles and abstracts
 paper_abstract_tuples = []
 with open('users_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        row_lst = list(row.keys())
-        title = row[row_lst[0]]
-        abstract = row[row_lst[1]]
+        title = row['title']
+        abstract = row['abstract']
         paper_abstract_tuples.append((title, abstract))
 
 # accessing stored corpus titles and abstracts
@@ -20,11 +21,8 @@ corpus_abstract_tuples = []
 with open('corpus_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        row_lst = list(row.keys())
-        title = row[row_lst[0]]
-        print('title')
-        print('*')
-        abstract = row[row_lst[1]]
+        title = row['title']
+        abstract = row['abstract']
         corpus_abstract_tuples.append((title, abstract))
 
 # Get all (3) papers from my Zotero library
