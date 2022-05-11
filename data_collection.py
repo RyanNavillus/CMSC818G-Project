@@ -48,7 +48,7 @@ def save_all_data(papers, fname):
             json.dump(dict, fp)
 
 
-def get_related_papers(titles, related=True, cited_by=True):
+def get_related_papers(titles, related=True, cited_by=False):
     """
     Finds papers that, according to google scholar, are related to and/or cited by the provided paper titles.
     :param titles:
@@ -62,7 +62,6 @@ def get_related_papers(titles, related=True, cited_by=True):
     """
     related_papers = []
     for title in titles:
-        print(title)
         # find title through google scholar
         search_query = scholarly.search_pubs(title)
         # uses the first result
@@ -321,20 +320,4 @@ def extract_abstract(text):
     abstract = abstract.replace('Abstract', '')
     return abstract
 
-
-"""
-['Google ScholarLoading...The system can\'t perform the operation now. Try again later.CiteAdvanced searchFind articleswith all of the wordswith the exact phrasewith at least one of the wordswithout the wordswhere my words occuranywhere in the articlein the title of the articleReturn articles authored bye.g., "PJ Hayes" or McCarthyReturn articles published ine.g., J Biol Chem or NatureReturn articles dated between\xa0—\xa0e.g., 1996Saved to My libraryDoneRemove articleArticlesCase lawProfilesMy profileMy libraryAlertsMetricsAdvanced searchSettingsSign inSign inArticlesScholar1 result (0.01 sec)My profileMy libraryYearAny timeSince 2022Since 2021Since 2018Sort by relevanceSort by dateAny timeSince 2022Since 2021Since 2018Custom range... — SearchSort by relevanceSort by dateCreate alertCertifiably-Robust Federated Adversarial Learning via Randomized SmoothingSearch within citing articles 
-[PDF] arxiv.orgSoK: On the Security & Privacy in Federated LearningG Abad, S Picek, A Urbieta\xa0- arXiv preprint arXiv:2112.05423, 2021 - arxiv.orgAdvances in Machine Learning (ML) and its wide range of applications boosted its popularity. Recent privacy awareness initiatives as the EU General Data Protection\xa0…Save Cite Related articles All 2 versions  View as HTML Create alertHelpPrivacyTerms']
-
-['Google ScholarLoading...The system can\'t perform the operation now. Try again later.CiteAdvanced searchFind articleswith all of the wordswith the exact phrasewith at least one of the wordswithout the wordswhere my words occuranywhere in the articlein the title of the articleReturn articles authored bye.g., "PJ Hayes" or McCarthyReturn articles published ine.g., J Biol Chem or NatureReturn articles dated between\xa0—\xa0e.g., 1996Saved to My libraryDoneRemove articleArticlesCase lawProfilesMy profileMy libraryAlertsMetricsAdvanced searchSettingsSign inSign inArticlesScholarAbout 101 results (0.02 sec)My profileMy libraryRelated articles 
-[PDF] arxiv.orgCertifiably-Robust Federated Adversarial Learning via Randomized SmoothingC Chen, B Kailkhura, R Goldhahn…\xa0- 2021 IEEE 18th\xa0…, 2021 - ieeexplore.ieee.orgFederated learning is an emerging data-private distributed learning framework, which, however, is vulnerable to adversarial attacks. Although several heuristic defenses are\xa0…Save Cite Cited by 1 Related articles All 5 versions   
-[PDF] arxiv.orgFederated learning in adversarial settingsR Kerkouche, G Ács, C Castelluccia\xa0- arXiv preprint arXiv:2010.07808, 2020 - arxiv.orgFederated Learning enables entities to collaboratively learn a shared prediction model while keeping their training data locally. It prevents data collection and aggregation and, therefore\xa0…Save Cite Cited by 5 Related articles All 6 versions  View as HTML  Privacy-enhanced federated learning against poisoning adversariesX Liu, H Li, G Xu, Z Chen, X Huang…\xa0- IEEE Transactions on\xa0…, 2021 - ieeexplore.ieee.orgFederated learning (FL), as a distributed machine learning setting, has received considerable attention in recent years. To alleviate privacy concerns, FL essentially\xa0…Save Cite Cited by 8 Related articles   
-[PDF] arxiv.orgDynamic backdoor attacks against federated learningA Huang\xa0- arXiv preprint arXiv:2011.07429, 2020 - arxiv.orgFederated Learning (FL) is a new machine learning framework, which enables millions of participants to collaboratively train machine learning model without compromising data\xa0…Save Cite Cited by 5 Related articles All 3 versions  View as HTML  
-[HTML] springer.com[HTML][HTML] Blockchain for federated learning toward secure distributed machine learning systems: a systemic surveyD Li, D Han, TH Weng, Z Zheng, H Li, H Liu…\xa0- Soft Computing, 2022 - SpringerFederated learning (FL) is a promising decentralized deep learning technology, which allows users to update models cooperatively without sharing their data. FL is reshaping\xa0…Save Cite Cited by 8 Related articles All 3 versions   
-[PDF] nsf.govMitigating data poisoning attacks on a federated learning-edge computing networkR Doku, DB Rawat\xa0- 2021 IEEE 18th Annual Consumer\xa0…, 2021 - ieeexplore.ieee.orgEdge Computing (EC) has seen a continuous rise in its popularity as it provides a solution to the latency and communication issues associated with edge devices transferring data to\xa0…Save Cite Cited by 6 Related articles All 2 versions   
-[PDF] aaai.orgA new ensemble adversarial attack powered by long-term gradient memoriesZ Che, A Borji, G Zhai, S Ling, J Li…\xa0- Proceedings of the AAAI\xa0…, 2020 - ojs.aaai.orgDeep neural networks are vulnerable to adversarial attacks. More importantly, some adversarial examples crafted against an ensemble of pre-trained source models can transfer\xa0…Save Cite Cited by 5 Related articles All 6 versions  View as HTML  
-[PDF] arxiv.orgAdversarial training in communication constrained federated learningD Shah, P Dube, S Chakraborty, A Verma\xa0- arXiv preprint arXiv\xa0…, 2021 - arxiv.orgFederated learning enables model training over a distributed corpus of agent data. However, the trained model is vulnerable to adversarial examples, designed to elicit\xa0…Save Cite Cited by 6 Related articles All 4 versions  View as HTML  
-[PDF] arxiv.orgProvable defense against privacy leakage in federated learning from representation perspectiveJ Sun, A Li, B Wang, H Yang, H Li, Y Chen\xa0- arXiv preprint arXiv\xa0…, 2020 - arxiv.orgFederated learning (FL) is a popular distributed learning framework that can reduce privacy risks by not explicitly sharing private data. However, recent works demonstrated that sharing\xa0…Save Cite Cited by 6 Related articles All 3 versions  View as HTML  
-[PDF] arxiv.orgFat: Federated adversarial trainingG Zizzo, A Rawat, M Sinn, B Buesser\xa0- arXiv preprint arXiv:2012.01791, 2020 - arxiv.orgFederated learning (FL) is one of the most important paradigms addressing privacy and data governance issues in machine learning (ML). Adversarial training has emerged, so far, as\xa0…Save Cite Cited by 9 Related articles All 5 versions  View as HTML Previous12345678910Next12345678910HelpPrivacyTerms']
-"""
 #title_from_scholar_search_result('https://scholar.google.com/scholar?q=related:X_Nqm_kCPlQJ:scholar.google.com/&scioq=Certifiably-Robust+Federated+Adversarial+Learning+via+Randomized+Smoothing&hl=en&as_sdt=0,33')
