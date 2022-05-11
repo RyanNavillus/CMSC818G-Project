@@ -73,7 +73,7 @@ for title in corpus_titles:
        if(i.getTitle() == title):
         found = True
         break
-    if (profile.findPaperVec(title) is not None)
+    if (profile.findPaperVec(title) is not None):
         newPaper = rec.Paper(profile.findPaperVec(title),title,[],vec=True)
         corpus_papers.append(newPaper)
         found = True
@@ -106,7 +106,7 @@ for title in corpus_titles:
        if(i.getTitle() == title):
         found = True
         break
-    if (profile.findPaperVec(title) is not None)
+    if (profile.findPaperVec(title) is not None):
         newPaper = rec.Paper(profile.findPaperVec(title),title,[],vec=True)
         corpus_papers.append(newPaper)
         found = True
