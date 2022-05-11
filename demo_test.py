@@ -31,7 +31,6 @@ profile = rec.UserProf()
 if(exists("profile.pt")):
     profile = torch.load("profile.pt")
 
-print(paper_abstract_tuples)
 
 
 # Build a corpus of papers to recommend from
@@ -88,7 +87,9 @@ for title in corpus_abstract_tuples:
         print("paper added")
         print(title[0])
 
-rec.recommend(5,profile,corpus_papers)
+recs = rec.recommend(3,profile,corpus_papers)
+while (not recs.empty()):
+    print(recs.get().getTitle())
 
 """ # Create user profile from full text, summarization performed
 for papero in papers:

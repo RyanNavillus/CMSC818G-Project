@@ -82,6 +82,9 @@ class recommendations:
     def __eq__(self, other):
         return self.similarity == other.similarity
 
+    def getTitle(self):
+        return self.paperTitle
+
 def recommend(num, uProf:UserProf, papers):
     recommended = PriorityQueue()
     for i in papers:
