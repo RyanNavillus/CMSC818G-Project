@@ -24,6 +24,9 @@ with open('corpus_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
 # Get all (3) papers from my Zotero library
 papers = paper_data_from_zotero()   # list of 3 paper dictionaries
 profile = rec.UserProf()
+if(exists("profile.pt")):
+    profile = torch.load("profile.pt")
+
 
 
 # Build a corpus of papers to recommend from
@@ -32,6 +35,8 @@ profile = rec.UserProf()
 title_list = [paper['data']['title'] for paper in papers]
 corpus_titles = get_related_papers(title_list)
 corpus_papers = []
+if(exists("corpus.pt")):
+    profile = torch.load("corpus.pt")
 
 # make list of tuples (title, abstract) for the corpus of related papers
 corpus_abstract_tuples = []
@@ -45,25 +50,69 @@ for paper in papers:
     abstract = text_from_paper_dict(paper, True)
     paper_abstract_tuples.append((paper['data']['title'], abstract))
 
-# Create user profile from abstracts, no summarization performed
-# for paper in papers:
-#     newPaper = rec.Paper(text_from_paper_dict(paper,True),paper['title'],[],True)
-#     profile.addPaper(newPaper)
-# Create corpus of papers for recommendation from abstracts, no summarization performed
-# for title in corpus_titles:
-#     newPaper = rec.Paper(text_from_google_scholar(title,True),title,[],True)
-#     corpus_papers.append(newPaper)
+""" # Create user profile from full text, summarization performed
+for paper in papers:
+    if(not profile.findPaperExists(paper['title'])):
+        found = False
+        paper = None
+        for i in corpus_papers:
+          if(i.getTitle() == title):
+              found = True
+              paper = i
+              break
+        if(found):
+            profile.addPaper(paper)
+        else:
+            newPaper = rec.Paper(text_from_paper_dict(paper,True),paper['title'],[],True)
+            profile.addPaper(newPaper)
 
-# rec.recommend(5,profile,corpus_papers)
+# Create corpus of papers for recommendation from abstracts, no summarization performed
+for title in corpus_titles:
+    found = False
+    for i in corpus_papers:
+       if(i.getTitle() == title):
+        found = True
+        break
+    if (profile.findPaperVec(title) is not None)
+        newPaper = rec.Paper(profile.findPaperVec(title),title,[],vec=True)
+        corpus_papers.append(newPaper)
+        found = True
+    if(not found):
+        newPaper = rec.Paper(text_from_google_scholar(title,True),title,[],True)
+        corpus_papers.append(newPaper)
+
+rec.recommend(5,profile,corpus_papers) """
 
 # Create user profile from full text, summarization performed
 for paper in papers:
-    newPaper = rec.Paper(text_from_paper_dict(paper,False),paper['title'],[],False)
-    profile.addPaper(newPaper)
+    if(not profile.findPaperExists(paper['title'])):
+        found = False
+        paper = None
+        for i in corpus_papers:
+          if(i.getTitle() == title):
+              found = True
+              paper = i
+              break
+        if(found):
+            profile.addPaper(paper)
+        else:
+            newPaper = rec.Paper(text_from_paper_dict(paper,False),paper['title'],[],False)
+            profile.addPaper(newPaper)
+
 # Create corpus of papers for recommendation from abstracts, no summarization performed
 for title in corpus_titles:
-    newPaper = rec.Paper(text_from_google_scholar(title,False),title,[],False)
-    corpus_papers.append(newPaper)
+    found = False
+    for i in corpus_papers:
+       if(i.getTitle() == title):
+        found = True
+        break
+    if (profile.findPaperVec(title) is not None)
+        newPaper = rec.Paper(profile.findPaperVec(title),title,[],vec=True)
+        corpus_papers.append(newPaper)
+        found = True
+    if(not found):
+        newPaper = rec.Paper(text_from_google_scholar(title,False),title,[],False)
+        corpus_papers.append(newPaper)
 
 rec.recommend(5,profile,corpus_papers)
 # make list of tuples (title, full paper text) for the corpus of related papers
@@ -77,3 +126,6 @@ paper_fulltext_tuples = []
 for paper in papers:
     text = text_from_paper_dict(paper, False)
     paper_abstract_tuples.append((paper['data']['title'], text))
+
+torch.save(profile,"profile.pt")
+torch.save(corpus_papers,"corpus.pt")

@@ -20,14 +20,22 @@ class Paper:
     keywords = []
     vec = None 
     
-    def __init__(self,txt, title,kwds,abstract=False):
-        summary = txt if abstract else summarizer(txt) #Slow, but Out of memory without summarization
-        summarySent = tokenize.sent_tokenize(summary)
-        self.textTokens = tokenizer(summarySent,return_tensors="pt",padding=True,truncation=True,max_length=512)
-        self.title = title
-        self.keywords = kwds
-        vecs = model(**self.textTokens)
-        self.vec = torch.mean(vecs.pooler_output, axis=0)
+    def __init__(self,txt, title,kwds,abstract=False,vec=False):
+        if(not vec):
+            summary = txt if abstract else summarizer(txt) #Slow, but Out of memory without summarization
+            summarySent = tokenize.sent_tokenize(summary)
+            self.textTokens = tokenizer(summarySent,return_tensors="pt",padding=True,truncation=True,max_length=512)
+            self.title = title
+            self.keywords = kwds
+            vecs = model(**self.textTokens)
+            self.vec = torch.mean(vecs.pooler_output, axis=0)
+        else:
+            self.title = title
+            self.keywords = kwds
+            self.vec = txt
+
+    def getTitle(self):
+        return self.title
 
     def vectorize(self):
         if(self.vec is None):
@@ -36,13 +44,29 @@ class Paper:
 
 class UserProf:
     keywords = None
-    vec =[]
+    vec = []
+    titles = []
 
     def __init__(self,kwd=None):
         self.keywords = kwd
 
     def addPaper(self, paper):
         self.vec.append(paper.vec)
+        self.titles.append(paper.titles)
+
+    def findPaperExists(self,title):
+        for i in self.titles:
+            if (title == i):
+                return True 
+        return False
+
+    
+    def findPaperVec(self,title):
+        for i in range(0,len(self.titles)):
+            if (title == self.titles[i]):
+                return self.vec[i]
+        return None
+
 
 
 class recommendations:
