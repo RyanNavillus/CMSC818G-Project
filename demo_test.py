@@ -1,6 +1,26 @@
 from data_collection import *
 import rec
 
+import csv
+# accessing stored user titles and abstracts
+paper_abstract_tuples = []
+with open('users_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        row_lst = list(row.keys())
+        title = row_lst[0]
+        abstract = row_lst[1]
+        paper_abstract_tuples.append((title, abstract))
+# accessing stored corpus titles and abstracts
+corpus_abstract_tuples = []
+with open('corpus_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        row_lst = list(row.keys())
+        title = row_lst[0]
+        abstract = row_lst[1]
+        corpus_abstract_tuples.append((title, abstract))
+
 # Get all (3) papers from my Zotero library
 papers = paper_data_from_zotero()   # list of 3 paper dictionaries
 profile = rec.UserProf()
