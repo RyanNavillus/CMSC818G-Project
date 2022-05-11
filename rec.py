@@ -96,6 +96,9 @@ def recommend(num, uProf:UserProf, papers):
             recommended.put(rec)
             if(recommended.qsize() > num):
                 recommended.get()
-    return recommended
+    results = []
+    while (not recommended.empty()):
+        results.append(recommended.get())
+    return results
 
     

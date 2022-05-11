@@ -5,8 +5,6 @@ import csv
 from scholarly import scholarly, ProxyGenerator
 import torch
 
-print('help')
-
 # accessing stored user titles and abstracts
 paper_abstract_tuples = []
 with open('users_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
@@ -15,6 +13,8 @@ with open('users_abstracts.csv', newline='', encoding='utf-8-sig') as csvfile:
         title = row['title']
         abstract = row['abstract']
         paper_abstract_tuples.append((title, abstract))
+
+
 
 # accessing stored corpus titles and abstracts
 corpus_abstract_tuples = []
@@ -65,7 +65,7 @@ for papero in paper_abstract_tuples:
         found = False
         paper = None
         for i in corpus_papers:
-          if(i.getTitle() == title):
+          if(i.getTitle() == papero[0]):
               found = True
               paper = i
         if(found):
@@ -73,8 +73,7 @@ for papero in paper_abstract_tuples:
         else:
             newPaper = rec.Paper(papero[1],papero[0],[],True)
             profile.addPaper(newPaper)
-            print("paper added")
-            print(papero[0])
+
 
 # Create corpus of papers for recommendation from abstracts, no summarization performed
 for title in corpus_abstract_tuples:
@@ -89,12 +88,19 @@ for title in corpus_abstract_tuples:
     if(not found):
         newPaper = rec.Paper(title[1],title[0],[],True)
         corpus_papers.append(newPaper)
-        print("paper added")
         print(title[0])
+        print("paper added to corpus")
 
 recs = rec.recommend(3,profile,corpus_papers)
-while (not recs.empty()):
-    print(recs.get().getTitle())
+titles_for_zotero = []
+print("Recommended:")
+for i in recs:
+    title = i.getTitle()
+    print(title)
+    titles_for_zotero.append(title)
+
+# Add recommended papers to Zotero
+add_title_to_zotero(titles_for_zotero)
 
 """ # Create user profile from full text, summarization performed
 for papero in papers:
