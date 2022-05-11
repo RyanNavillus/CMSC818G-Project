@@ -75,6 +75,7 @@ def get_related_papers(titles, related=True, cited_by=True):
             related_papers = related_papers + title_from_scholar_search_result(cited_by_url)
     return related_papers
 
+
 def title_from_scholar_search_result(url):
     """
 
@@ -107,6 +108,7 @@ def title_from_scholar_search_result(url):
         titles.append(s[start_ind:end_ind])
     return titles
 
+
 def find_end_of_title(s, start_ind):
     """
 
@@ -127,6 +129,7 @@ def find_end_of_title(s, start_ind):
     else:
         end_ind = start_ind + 30
     return end_ind
+
 
 def paper_data_from_zotero(n=-1):
     """

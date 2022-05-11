@@ -1,4 +1,4 @@
-from data_collection import *
+from data_collection import paper_data_from_zotero, get_related_papers, text_from_google_scholar, text_from_paper_dict
 import rec
 
 # Get all (3) papers from my Zotero library
@@ -38,14 +38,14 @@ for paper in papers:
 
 # Create user profile from full text, summarization performed
 for paper in papers:
-    newPaper = rec.Paper(text_from_paper_dict(paper,False),paper['title'],[],False)
+    newPaper = rec.Paper(text_from_paper_dict(paper, False), paper['title'], [], False)
     profile.addPaper(newPaper)
 # Create corpus of papers for recommendation from abstracts, no summarization performed
 for title in corpus_titles:
-    newPaper = rec.Paper(text_from_google_scholar(title,False),title,[],False)
+    newPaper = rec.Paper(text_from_google_scholar(title, False), title, [], False)
     corpus_papers.append(newPaper)
 
-rec.recommend(5,profile,corpus_papers)
+rec.recommend(5, profile, corpus_papers)
 # make list of tuples (title, full paper text) for the corpus of related papers
 corpus_fulltext_tuples = []
 for title in corpus_titles:
