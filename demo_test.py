@@ -1,8 +1,13 @@
 from data_collection import paper_data_from_zotero, get_related_papers, text_from_google_scholar, text_from_paper_dict
 import rec
 
+# personal library ID
+ID = 8601934
+LIBRARY = 'user'
+APIKEY = 'CzACnmlnHkQxIbkjj1y2tNzu'
+
 # Get all (3) papers from my Zotero library
-papers = paper_data_from_zotero()   # list of 3 paper dictionaries
+papers = paper_data_from_zotero(ID, LIBRARY, APIKEY)   # list of 3 paper dictionaries
 profile = rec.UserProf()
 
 

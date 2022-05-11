@@ -1,7 +1,12 @@
 from data_collection import *
 
+# personal library ID
+ID = 8601934
+LIBRARY = 'user'
+APIKEY = 'CzACnmlnHkQxIbkjj1y2tNzu'
+
 # Get all (3) papers from my Zotero library
-papers = paper_data_from_zotero()   # list of 3 paper dictionaries
+papers = paper_data_from_zotero(ID, LIBRARY, APIKEY)   # list of 3 paper dictionaries
 
 # Build a corpus of papers to recommend from
 # For all papers, get the titles of all papers google scholar provides as related papers or cited by papers

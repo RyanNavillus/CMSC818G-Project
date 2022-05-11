@@ -14,11 +14,6 @@ from bs4 import BeautifulSoup
 
 import pdb
 
-# personal library ID
-ID = 8601934
-LIBRARY = 'user'
-APIKEY = 'CzACnmlnHkQxIbkjj1y2tNzu'
-
 
 def save_all_data(papers, fname):
     """
@@ -131,7 +126,7 @@ def find_end_of_title(s, start_ind):
     return end_ind
 
 
-def paper_data_from_zotero(n=-1):
+def paper_data_from_zotero(zotero_id, zotero_library, zotero_key, n=-1):
     """
     Retrieves paper dictionaries from Zotero
     :param n: max number of papers to retrieve (retrieve all if n = -1)
@@ -139,7 +134,7 @@ def paper_data_from_zotero(n=-1):
     :return: list of paper dictionaries taken from Zotero library
     :rtype: `list`
     """
-    zot = zotero.Zotero(ID, LIBRARY, APIKEY)
+    zot = zotero.Zotero(zotero_id, zotero_library, zotero_key)
     if n == -1:
         items = zot.top()
     else:
