@@ -12,9 +12,6 @@ from PyPDF2 import PdfFileReader
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 
-import pdb
-
-
 def save_all_data(papers, fname):
     """
     Saves a list of papers to storage (json file)
@@ -63,13 +60,13 @@ def add_title_to_zotero(titles, zotero_id, zotero_library, zotero_key):
 def get_related_papers(titles, related=True, cited_by=False):
     """
     Finds papers that, according to google scholar, are related to and/or cited by the provided paper titles.
-    :param titles:
+    :param titles: the titles of the papers from which to find related papers and/or cited by papers
     :type titles: `list`
-    :param related:
-    :type related: `list`
-    :param cited_by:
-    :type cited_by: `list`
-    :return:
+    :param related: if True, the related papers will be sought
+    :type related: `bool`
+    :param cited_by: if True, the cited by papers will be sought
+    :type cited_by: `bool`
+    :return: list of related paper title strings
     :rtype: `list`
     """
     related_papers = []
@@ -89,10 +86,10 @@ def get_related_papers(titles, related=True, cited_by=False):
 
 def title_from_scholar_search_result(url):
     """
-
-    :param url:
-    :type url: `list`
-    :return:
+    Scrapes a Google Scholar search result and extracts the paper titles
+    :param url: url corresponding to the Google Scholar results
+    :type url: `str`
+    :return: list of title strings
     :rtype: `list`
     """
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -122,13 +119,14 @@ def title_from_scholar_search_result(url):
 
 def find_end_of_title(s, start_ind):
     """
-
-    :param s:
-    :type s: `list`
-    :param start_ind:
-    :type start_ind: `list`
-    :return:
-    :rtype: `list`
+    Helper function for extracting titles (specifically, finding the end of one)
+    from scraping a Google Scholar search result
+    :param s: substring that the title is in and that the end index needs to be found from
+    :type s: `str`
+    :param start_ind: index of the first character if the title within the provided string
+    :type start_ind: `int`
+    :return: index of the last character of the title within the initial provided string
+    :rtype: `int`
     """
     end_ind = s.find(',') - 1
     if end_ind != -2:
@@ -155,20 +153,15 @@ def paper_data_from_zotero(zotero_id, zotero_library, zotero_key, n=-1):
         items = zot.top()
     else:
         items = zot.top(limit=n)
-    """ dictionary keys: 'key', 'version', 'itemType', 'title', 'creators', 'abstractNote',
-    'publicationTitle', 'volume', 'issue', 'pages', 'date', 'series', 'seriesTitle', 'seriesText',
-    'journalAbbreviation', 'language', 'DOI', 'ISSN', 'shortTitle', 'url', 'accessDate', 'archive',
-    'archiveLocation', 'libraryCatalog', 'callNumber', 'rights', 'extra', 'tags', 'collections', 'relations',
-    'dateAdded', 'dateModified' """
     return items
 
 
 def dictionary_from_google_scholar(title):
     """
-
-    :param title:
-    :type title:
-    :return:
+    Gets paper info from Google Scholar and puts it into a dictionary that matches the form Zotero uses
+    :param title: title of paper to search Google Scholar with
+    :type title: `str`
+    :return: dictionary of paper info in the form that Zotero uses
     :rtype: `dict`
     """
     paper = {}
@@ -334,5 +327,3 @@ def extract_abstract(text):
         i += 1
     abstract = abstract.replace('Abstract', '')
     return abstract
-
-#title_from_scholar_search_result('https://scholar.google.com/scholar?q=related:X_Nqm_kCPlQJ:scholar.google.com/&scioq=Certifiably-Robust+Federated+Adversarial+Learning+via+Randomized+Smoothing&hl=en&as_sdt=0,33')
