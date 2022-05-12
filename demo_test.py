@@ -1,4 +1,4 @@
-from data_collection import paper_data_from_zotero, get_related_papers, text_from_google_scholar, text_from_paper_dict
+from data_collection import paper_data_from_zotero, get_related_papers, text_from_google_scholar, text_from_paper_dict, add_title_to_zotero
 import rec
 from os.path import exists
 import csv
@@ -93,14 +93,15 @@ for title in corpus_abstract_tuples:
 
 recs = rec.recommend(3,profile,corpus_papers)
 titles_for_zotero = []
-print("Recommended:")
+print("\nRecommended:")
 for i in recs:
     title = i.getTitle()
     print(title)
     titles_for_zotero.append(title)
+print("")
 
 # Add recommended papers to Zotero
-add_title_to_zotero(titles_for_zotero)
+add_title_to_zotero(titles_for_zotero, ID, LIBRARY, APIKEY)
 
 """ # Create user profile from full text, summarization performed
 for papero in papers:

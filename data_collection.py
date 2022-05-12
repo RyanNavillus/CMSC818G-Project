@@ -42,13 +42,14 @@ def save_all_data(papers, fname):
         with open(fname, 'w') as fp:
             json.dump(dict, fp)
 
-def add_title_to_zotero(titles):
+
+def add_title_to_zotero(titles, zotero_id, zotero_library, zotero_key):
     """
     Add a list of papers (titles provided) to Zotero library.
     :param titles: list of titles to add
     :type titles: `list`
     """
-    zot = zotero.Zotero(ID, LIBRARY, APIKEY)
+    zot = zotero.Zotero(zotero_id, zotero_library, zotero_key)
     for title in titles:
         template = zot.item_template('journalArticle')
         template['title'] = title
