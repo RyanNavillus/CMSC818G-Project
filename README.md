@@ -1,5 +1,7 @@
 # RAGS: Research Assistant for Graduate Students
 
+*Note that final presenation slides (both pptx and pdf versions) and the conference paper draft pdf are all included in this repo.*
+
 ## Instructions
 ### Installing necessary packages
 - follow [setup instructions for pyzotero](https://pyzotero.readthedocs.io/en/latest/)
